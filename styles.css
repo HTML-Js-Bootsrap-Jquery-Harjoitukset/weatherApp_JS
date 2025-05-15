@@ -17,6 +17,7 @@ h1{
     font-size: 1.8rem;
     background-color: lightskyblue;
     font-weight: 700;
+    opacity: 0.7;
 }
 
 .container{
@@ -26,9 +27,9 @@ h1{
 }
 
 
-
 .weather-input{
     width: 500px;
+    opacity: 0.7;
 }
 
 .weather-input h3{
@@ -91,10 +92,11 @@ h1{
 .current-weather{
     color:#fff;
     display: flex;
-    border-radius:5px;
     padding: 20px 70px 20px 20px;
     background: #5372F0;
     justify-content: space-between;
+    opacity: 0.7;
+    
 }
 
 .current-weather h2{
@@ -140,11 +142,9 @@ h4{
     text-transform: capitalize;
 }
 
-
-.day-forecast h2{
-    font-size: 1.5rem;
-    margin: 30px 0;
-    text-align: center;
+.days-forecast > h2 {
+    margin-top:15px;
+    margin-bottom: 10px;
 }
 
 .weather-cards{
@@ -156,8 +156,8 @@ h4{
     background: #6C757D;
     padding: 18px 16px;
     color:white;
-    border-radius: 5px;
     width: calc(100% / 5 );
+    opacity: 0.7;
 }
 
 .weather-cards .card img{
@@ -172,7 +172,7 @@ h4{
     box-sizing: border-box;
     color:white;
     text-align: center;
-    border-radius: 5px;
+    opacity: 0.7;
 }
 
 .clock h2{
@@ -191,6 +191,8 @@ h4{
     justify-content: space-between;
     align-items: center;
 }
+
+
 
 /* Responsive Design */
 @media (max-width: 1400px) {

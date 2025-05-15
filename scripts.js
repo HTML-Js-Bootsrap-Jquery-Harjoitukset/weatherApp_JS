@@ -68,12 +68,35 @@ const createWeatherCard = (cityName,weatherItem, index) => {
         }
 }
 
+// Function to update the background image based on the main weather condition
+const updateBackgroundImage = (weatherCondition) => {
+    const body = document.body;
+
+    // Define background images for different weather conditions
+    const weatherBackgrounds = {
+        Clear: "url('images/Clear.jpg')", // Replace with your image paths
+        Clouds: "url('images/Clouds.jpg')",
+        Rain: "url('images/Rain.jpg')",
+        Snow: "url('images/Snow.jpg')",
+        Thunderstorm: "url('images/Thunderstorm.jpg')",
+        Drizzle: "url('images/Drizzle.jpg')",
+        Mist: "url('images/Mist.jpg')",
+   
+    };
+
+    // Set the background image based on the weather condition
+    body.style.backgroundImage = weatherBackgrounds[weatherCondition] || weatherBackgrounds.Default;
+    body.style.backgroundRepeat = "no-repeat";
+    body.style.backgroundPosition = "center";
+    body.style.backgroundSize = "cover";
+};
+
 const getWeatherDetails = (cityName, lat, lon) => {
     const WEATHER_API_URL = `http://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}`;
 
     fetch(WEATHER_API_URL).then(res => res.json()).then(data => {
        
-        //filtering wether forecast by date
+        // Filter weather forecast by date
         const uniqueForecastDays = [];
         const fiveDaysForecast = data.list.filter(forecast => {
             const forecastDate = new Date(forecast.dt_txt).getDate();
@@ -82,27 +105,28 @@ const getWeatherDetails = (cityName, lat, lon) => {
             }
         });
 
-        //clearing previous weather data
+        // Clear previous weather data
         CityInput.value = "";
         weatherCardDiv.innerHTML = ""; 
         currentWeatherDiv.innerHTML = "";
 
-        //Crating weather card and adding it to the DOM
+        // Create weather cards and add them to the DOM
         fiveDaysForecast.forEach((weatherItem, index) => {
-                if(index === 0) {
-                    currentWeatherDiv.insertAdjacentHTML("beforeend",createWeatherCard(cityName,weatherItem,index));
-                }else{
-                    weatherCardDiv.insertAdjacentHTML("beforeend",createWeatherCard(cityName,weatherItem, index));
-                }
+            if(index === 0) {
+                currentWeatherDiv.insertAdjacentHTML("beforeend", createWeatherCard(cityName, weatherItem, index));
+                // Update background image based on the main weather condition
+                updateBackgroundImage(weatherItem.weather[0].main);
+            } else {
+                weatherCardDiv.insertAdjacentHTML("beforeend", createWeatherCard(cityName, weatherItem, index));
+            }
         });
 
         console.log(fiveDaysForecast);
 
     }).catch(() => {
-        alert("An error occurred while fetching the forecast weather data. Please try again.")
+        alert("An error occurred while fetching the forecast weather data. Please try again.");
     });
-}
-
+};
 
 const getCityCoordinates = () => {
     const cityName = CityInput.value.trim();
