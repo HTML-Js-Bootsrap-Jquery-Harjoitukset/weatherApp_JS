@@ -96,7 +96,6 @@ h1{
     background: #5372F0;
     justify-content: space-between;
     opacity: 0.7;
-    
 }
 
 .current-weather h2{
@@ -108,7 +107,6 @@ h1{
     font-size: 1rem;
     font-weight: 500;
 }
-
 
 .weather-data .icon {
     position: absolute !important;
@@ -167,13 +165,25 @@ h4{
 
 .clock{
     background-color: lightskyblue;
-    margin: 25px;
     padding: 5px;
     box-sizing: border-box;
-    color:white;
+    color: white;
     text-align: center;
     opacity: 0.7;
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    min-width: 300px;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
 }
+
+
 
 .clock h2{
     font-family: "Abel", sans-serif;
@@ -193,7 +203,6 @@ h4{
 }
 
 
-
 /* Responsive Design */
 @media (max-width: 1400px) {
     .weather-data .current-weather{
@@ -204,9 +213,7 @@ h4{
     }
     .weather-cards .card{
         width: calc(100% / 3 - 15px);
-    }
-
-   
+    }   
 }
 
 @media (max-width: 1200px) {
