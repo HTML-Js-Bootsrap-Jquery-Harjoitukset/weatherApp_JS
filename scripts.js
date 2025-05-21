@@ -48,13 +48,13 @@ const createWeatherCard = (cityName, weatherItem, index) => {
                 </div>
                 <div class="icon">
                     <img src="https://openweathermap.org/img/wn/${weatherItem.weather[0].icon}@4x.png" alt="Weather Icon">
-                    <h4>${weatherItem.weather[0].description}</h4>
+                    <h4> ${weatherItem.weather[0].main} | ${weatherItem.weather[0].description}</h4>
                 </div>`;
     } else {
         return `<li class="card">
                 <h2>(${dayName} ${formattedDate})</h2>
                 <img src="https://openweathermap.org/img/wn/${weatherItem.weather[0].icon}@4x.png" alt="Weather Icon">
-                <h4 class='desc'>${weatherItem.weather[0].description}</h4>
+                <h4 class='desc'>${weatherItem.weather[0].main} | ${weatherItem.weather[0].description}</h4>
                 <h4>Temperature: ${convertTemp(weatherItem.main.temp)}</h4>
                 <h4>Wind Speed: ${weatherItem.wind.speed} M/S</h4>
                 <h4>Humidity: ${weatherItem.main.humidity} %</h4>
@@ -62,23 +62,66 @@ const createWeatherCard = (cityName, weatherItem, index) => {
     }
 };
 
+// Set default background on initial load
+document.addEventListener("DOMContentLoaded", () => {
+    updateBackgroundImage("Default"); // or any default condition you prefer
+});
+
 const updateBackgroundImage = (weatherCondition) => {
     const body = document.body;
+    // Map weather conditions to their background files and types
     const weatherBackgrounds = {
-        Clear: "url('images/Clear.jpg')",
-        Clouds: "url('images/Clouds.jpg')",
-        Rain: "url('images/Rain.jpg')",
-        Snow: "url('images/Snow.jpg')",
-        Thunderstorm: "url('images/Thunderstorm.jpg')",
-        Drizzle: "url('images/Drizzle.jpg')",
-        Mist: "url('images/Mist.jpg')",
+        Clear: { type: "video", src: "images/Clear.mp4" },
+        Clouds: { type: "video", src: "images/Clouds.mp4" },
+        Rain: { type: "image", src: "images/Rain.jpg" },
+        Snow: { type: "image", src: "images/Snow.jpg" },
+        Thunderstorm: { type: "image", src: "images/Thunderstorm.jpg" },
+        Drizzle: { type: "image", src: "images/Drizzle.jpg" },
+        Mist: { type: "image", src: "images/Mist.jpg" },
+        Fog: { type: "image", src: "images/Mist.jpg" },
+        Haze: { type: "image", src: "images/Mist.jpg" },
+        Default: { type: "image", src: "images/default.jpg" }
     };
-    body.style.backgroundImage = weatherBackgrounds[weatherCondition] || weatherBackgrounds.Default;
+
+    // Remove any existing video background
+    const existingVideo = document.getElementById('weather-bg-video');
+    if (existingVideo) {
+        existingVideo.remove();
+    }
+
+    const bg = weatherBackgrounds[weatherCondition];
+    if (bg && bg.type === "video") {
+        // Use video background
+        const video = document.createElement('video');
+        video.id = 'weather-bg-video';
+        video.src = bg.src;
+        video.autoplay = true;
+        video.loop = true;
+        video.muted = true;
+        video.style.position = 'fixed';
+        video.style.top = '0';
+        video.style.left = '0';
+        video.style.width = '100vw';
+        video.style.height = '100vh';
+        video.style.objectFit = 'cover';
+        video.style.zIndex = '-1';
+        document.body.prepend(video);
+        body.style.backgroundImage = '';
+
+    } else if (bg && bg.type === "image") {
+        // Use image background
+        body.style.backgroundImage = `url('${bg.src}')`;
+    } else {
+        // Default background if condition not matched
+        body.style.backgroundImage = "";
+    }
+
     body.style.backgroundRepeat = "no-repeat";
     body.style.backgroundPosition = "center";
     body.style.backgroundSize = "cover";
     body.style.height = "100vh";
 };
+
 
 const getWeatherDetails = (cityName, lat, lon) => {
     const WEATHER_API_URL = `http://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}`;
