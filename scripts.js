@@ -31,6 +31,21 @@ const createWeatherCard = (cityName, weatherItem, index) => {
     const formattedDate = `${day}.${month}.${year}`;
     const formattedDateForMainCard = `${day}.${month}.${year} ${Hours}:${Minutes}`;
 
+    // Map weather "main" to custom icon file names
+    const customIcons = {
+        Clear: "icons/Clear.png",
+        Clouds: "icons/clouds.png",
+        Rain: "icons/Rain.png",
+        Snow: "icons/snow.png",
+        Thunderstorm: "icons/Thunderstorm.png",
+        Drizzle: "icons/Drizzle.png",
+        Mist: "icons/Mist.png",
+        Fog: "icons/Fog.png",
+        Haze: "icons/Haze.png"
+    };
+    const weatherMain = weatherItem.weather[0].main;
+    const iconSrc = customIcons[weatherMain] || customIcons.Default;
+
     if(index === 0) {
         return `<div class="details">
                 <div class="mainDATA">
@@ -47,14 +62,14 @@ const createWeatherCard = (cityName, weatherItem, index) => {
                     </div>
                 </div>
                 <div class="icon">
-                    <img src="https://openweathermap.org/img/wn/${weatherItem.weather[0].icon}@4x.png" alt="Weather Icon">
+                    <img src="${iconSrc}" alt="Weather Icon">
                     <h4> ${weatherItem.weather[0].main} | ${weatherItem.weather[0].description}</h4>
                 </div>`;
     } else {
         return `<li class="card">
                 <h2>(${dayName} ${formattedDate})</h2>
-                <img src="https://openweathermap.org/img/wn/${weatherItem.weather[0].icon}@4x.png" alt="Weather Icon">
-                <h4 class='desc'>${weatherItem.weather[0].main} | ${weatherItem.weather[0].description}</h4>
+                <img src="${iconSrc}" alt="Weather Icon" style="width: 60px; height: 60px;">
+                <h4 class='desc' style='margin-top:25px;' >${weatherItem.weather[0].main} | ${weatherItem.weather[0].description}</h4>
                 <h4>Temperature: ${convertTemp(weatherItem.main.temp)}</h4>
                 <h4>Wind Speed: ${weatherItem.wind.speed} M/S</h4>
                 <h4>Humidity: ${weatherItem.main.humidity} %</h4>
