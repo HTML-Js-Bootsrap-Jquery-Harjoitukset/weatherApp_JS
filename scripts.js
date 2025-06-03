@@ -66,14 +66,17 @@ const createWeatherCard = (cityName, weatherItem, index) => {
                     <h4> ${weatherItem.weather[0].main} | ${weatherItem.weather[0].description}</h4>
                 </div>`;
     } else {
-        return `<li class="card">
+        return `
+            <li class="card forecast-day-card" data-date="${year}-${month}-${day}">
                 <h2>(${dayName} ${formattedDate})</h2>
                 <img src="${iconSrc}" alt="Weather Icon" style="width: 60px; height: 60px;">
-                <h4 class='desc' style='margin-top:25px;' >${weatherItem.weather[0].main} | ${weatherItem.weather[0].description}</h4>
+                <h4 class='desc' style='margin-top:25px;'>${weatherItem.weather[0].main} | ${weatherItem.weather[0].description}</h4>
                 <h4>Temperature: ${convertTemp(weatherItem.main.temp)}</h4>
+                <h4>Feels like: ${weatherItem.main.feels_like} </h4>
                 <h4>Wind Speed: ${weatherItem.wind.speed} M/S</h4>
                 <h4>Humidity: ${weatherItem.main.humidity} %</h4>
-            </li>`;
+            </li> `;
+        
     }
 };
 
@@ -191,6 +194,8 @@ const getUserCoordinates = () => {
             fetch(REVERSE_GEOCODING_URL).then(res => res.json()).then(data => {
                const { name } = data[0]; 
                getWeatherDetails(name,latitude, longitude);
+               console.log(data);
+               
             }).catch(() => {
                 alert("An error occurred while fetching the city. Please try again.");
             });
