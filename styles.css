@@ -1,3 +1,178 @@
+/* Tuntiennusteen korttirivi responsiiviseksi */
+.hourly-forecast-card .hourly-cards-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: flex-start;
+}
+
+@media (max-width: 1200px) {
+    .hourly-forecast-card .hour-card {
+        flex: 0 0 calc(33.333% - 1rem);
+        min-width: 180px;
+    }
+}
+@media (max-width: 900px) {
+    .hourly-forecast-card .hour-card {
+        flex: 0 0 calc(50% - 1rem);
+        min-width: 180px;
+    }
+}
+@media (max-width: 600px) {
+    .hourly-forecast-card .hour-card {
+        flex: 0 0 100%;
+        min-width: 0;
+    }
+}
+/* Tuntiennusteen yksittäinen tuntikortti uusi rakenne */
+.hourly-forecast-card .hour-card {
+    flex: 0 0 190px;
+    background: #f7f7f7;
+    padding: 0.7rem 0.8rem 0.9rem 0.8rem;
+    text-align: center;
+    box-shadow: 0 1px 4px #0001;
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 300px;
+}
+/* Tuntiennusteen datarivit: selkeästi näkyvät, rivitetty, responsiivinen */
+.hour-card .hour-data-table {
+    width: 100%;
+    margin-top: 0.2em;
+}
+.hour-card .hour-data-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2px 0 0 0;
+    font-size: 1em;
+    font-family: inherit;
+}
+.hour-card .hour-data-label {
+    text-align: left;
+    color: #444;
+    font-weight: 500;
+    flex: 1 1 60%;
+    padding-right: 0.5em;
+    word-break: break-word;
+}
+.hour-card .hour-data-value {
+    text-align: right;
+    color: #222;
+    font-weight: 600;
+    flex: 0 0 40%;
+    padding-left: 0.5em;
+    word-break: break-word;
+}
+.hour-card .hour-time {
+    font-weight: bold;
+    font-size: 1.15em;
+    margin-bottom: 0.2em;
+    color: #222;
+    border-bottom: 1px solid gray;
+    width: 100%;
+}
+.hour-card .hour-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0.5em auto 0.2em auto;
+    object-fit: contain;
+    display: block;
+}
+.hour-card .hour-main {
+    font-size: 1.05em;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 0.1em;
+    
+}
+.hour-card .hour-desc {
+    font-size: 0.95em;
+    color: #666;
+    margin-bottom: 1.2em;
+    font-style: italic;
+}
+.hour-card .hour-data-table {
+    width: 100%;
+    margin-top: 0.2em;
+}
+.hour-card .hour-data-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2px 0 0 0;
+    font-size: 1em;
+    font-family: inherit;
+    
+}
+.hour-card .hour-data-label {
+    text-align: left;
+    color: #444;
+    font-weight: 500;
+    flex: 1 1 60%;
+    padding-right: 0.5em;
+}
+.hour-card .hour-data-value {
+    text-align: right;
+    color: #222;
+    font-weight: 600;
+    flex: 0 0 40%;
+    padding-left: 0.5em;
+    font-size: 15px;
+}
+/* Tuntiennusteen yksittäinen tuntikortti */
+.hourly-forecast-card .hour-card {
+    flex: 0 0 160px;
+    background:rgba(243, 244, 245, 0.795);
+    padding: 0.5rem 0.7rem;
+    text-align: center;
+    box-shadow: 0 1px 4px #0001;
+    margin-bottom: 0.5rem;
+    width:100%
+}
+/* Tyylikäs sulje-painike tuntiennustekortille */
+.hourly-forecast-card .close-hourly-btn {
+    display: inline-block;
+    background: red;
+    color: #fff;
+    border: none;
+    padding: 8px 28px;
+    font-size: 1.08rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px #0002;
+    cursor: pointer;
+    outline: none;
+    margin-top: 1.2rem;
+    margin-bottom: 0.2rem;
+    display: block;
+    text-transform: uppercase;
+}
+.hourly-forecast-card .close-hourly-btn:hover {
+    color: #fff;
+    transform: scale(1.06);
+    box-shadow: 0 4px 16px #0003;
+}
+/* Ohjeteksti tuntiennusteelle */
+#hourly-instruction {
+    font-size: 1.08em;
+    font-weight: 600;
+    color: #222;
+    background: rgba(255,255,255,0.82);
+    box-shadow: 0 2px 12px #0002;
+    padding: 12px 22px;
+    margin-bottom: 0.7em;
+    margin-top: 0.2em;
+    display: block;
+    letter-spacing: 0.01em;
+    text-align: center;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    text-transform: uppercase
+}
 @import url('https://fonts.googleapis.com/css2?family=Abel&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Quicksand:wght@300..700&display=swap');
 
 *{
@@ -7,7 +182,34 @@
     font-family: "Abel", sans-serif;
 }
 body{
-    background-color: #E3F2FD;   
+    background-color: #E3F2FD;
+    min-height: 100vh;
+    min-width: 100vw;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Responsiivinen taustakuva */
+body {
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: cover !important;
+    background-attachment: fixed !important;
+}
+
+/* Responsiivinen taustavideo */
+#weather-bg-video {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    min-width: 100vw;
+    min-height: 100vh;
+    object-fit: cover !important;
+    z-index: -1;
+    pointer-events: none;
+    background: #000;
 }
 
 h1{
@@ -155,7 +357,7 @@ h4{
 }
 
 .weather-cards .card{
-    background: #6C757D;
+    background: rgb(108, 117, 125);
     padding: 18px 16px;
     color:white;
     width: calc(100% / 5 );

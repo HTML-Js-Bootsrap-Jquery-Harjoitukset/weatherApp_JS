@@ -14,6 +14,10 @@ const convertTemp = (tempK) => {
         : `${((tempK - 273.15) * 9/5 + 32).toFixed(2)} °F`;
 };
 
+// Tallennetaan viimeisin haettu 5 päivän data ja koko data
+let lastForecastData = null;
+let lastCityName = null;
+
 const createWeatherCard = (cityName, weatherItem, index) => {
     const date = new Date(weatherItem.dt_txt);
     let day = date.getDate();
@@ -72,7 +76,7 @@ const createWeatherCard = (cityName, weatherItem, index) => {
                 <img src="${iconSrc}" alt="Weather Icon" style="width: 60px; height: 60px;">
                 <h4 class='desc' style='margin-top:25px;'>${weatherItem.weather[0].main} | ${weatherItem.weather[0].description}</h4>
                 <h4>Temperature: ${convertTemp(weatherItem.main.temp)}</h4>
-                <h4>Feels like: ${weatherItem.main.feels_like} </h4>
+                <h4>Feels like: ${convertTemp(weatherItem.main.feels_like)} </h4>
                 <h4>Wind Speed: ${weatherItem.wind.speed} M/S</h4>
                 <h4>Humidity: ${weatherItem.main.humidity} %</h4>
             </li> `;
@@ -145,6 +149,8 @@ const getWeatherDetails = (cityName, lat, lon) => {
     const WEATHER_API_URL = `http://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}`;
 
     fetch(WEATHER_API_URL).then(res => res.json()).then(data => {
+        lastForecastData = data; // Talletetaan koko data myöhempää käyttöä varten
+        lastCityName = cityName;
         const uniqueForecastDays = [];
         const fiveDaysForecast = data.list.filter(forecast => {
             const forecastDate = new Date(forecast.dt_txt).getDate();
@@ -157,6 +163,19 @@ const getWeatherDetails = (cityName, lat, lon) => {
         weatherCardDiv.innerHTML = ""; 
         currentWeatherDiv.innerHTML = "";
 
+        document.getElementById('hourly-forecast-container').innerHTML = '';
+
+        // Lisää ohjeteksti vain kun päiväkortit näytetään
+        const daysForecastDiv = document.querySelector('.days-forecast');
+        if (daysForecastDiv && !document.getElementById('hourly-instruction')) {
+            const info = document.createElement('div');
+            info.id = 'hourly-instruction';
+            info.textContent = 'Klikkaa päivän korttia nähdäksesi tuntiennusteen.';
+            daysForecastDiv.insertBefore(info, daysForecastDiv.querySelector('.weather-cards'));
+        } else if (daysForecastDiv && document.getElementById('hourly-instruction')) {
+            document.getElementById('hourly-instruction').style.display = '';
+        }
+
         fiveDaysForecast.forEach((weatherItem, index) => {
             if(index === 0) {
                 currentWeatherDiv.insertAdjacentHTML("beforeend", createWeatherCard(cityName, weatherItem, index));
@@ -166,11 +185,115 @@ const getWeatherDetails = (cityName, lat, lon) => {
             }
         });
 
+        // Lisätään klikkauskuuntelijat päivän korteille
+        addDayCardClickListeners();
+
     }).catch(() => {
         alert("An error occurred while fetching the forecast weather data. Please try again.");
     });
 };
 
+// Luo tuntiennustekortti valitulle päivälle
+function createHourlyForecastCard(dateString, cityName, forecastList) {
+    // Suodatetaan kaikki tunnit tälle päivälle
+    const hours = forecastList.filter(item => {
+        const d = new Date(item.dt_txt);
+        const y = d.getFullYear();
+        const m = (d.getMonth() + 1).toString().padStart(2, '0');
+        const day = d.getDate().toString().padStart(2, '0');
+        return `${y}-${m}-${day}` === dateString;
+    });
+    if (hours.length === 0) return '';
+
+    let html = `<div class="hourly-forecast-card" style="background:rgb(108, 117, 125,0.5);margin:1rem 0;padding:1rem;box-shadow:0 2px 8px #0002;">
+        <h3 style="margin-bottom:1rem;">Tuntiennuste: ${cityName} (${dateString.replace(/-/g, '.')})</h3>
+        <div class="hourly-cards-row">
+    `;
+    hours.forEach(item => {
+        const d = new Date(item.dt_txt);
+        const hour = d.getHours().toString().padStart(2, '0');
+        const min = d.getMinutes().toString().padStart(2, '0');
+        const weatherMain = item.weather[0].main;
+        const customIcons = {
+            Clear: "icons/Clear.png",
+            Clouds: "icons/clouds.png",
+            Rain: "icons/Rain.png",
+            Snow: "icons/snow.png",
+            Thunderstorm: "icons/Thunderstorm.png",
+            Drizzle: "icons/Drizzle.png",
+            Mist: "icons/Mist.png",
+            Fog: "icons/Fog.png",
+            Haze: "icons/Haze.png"
+        };
+        const iconSrc = customIcons[weatherMain] || customIcons.Default;
+        const noData = '<span style="color:#d32f2f;font-weight:normal;">NO</span>';
+        html += `<div class="hour-card">
+            <div class="hour-time">${hour}:${min}</div>
+            <img class="hour-icon" src="${iconSrc}" alt="icon">
+            <div class="hour-main">${item.weather[0].main}</div>
+            <div class="hour-desc">${item.weather[0].description}</div>
+            <div class="hour-data-table">
+                <div class="hour-data-row"><span class="hour-data-label">Temperature:</span><span class="hour-data-value">${typeof item.main.temp !== 'undefined' ? convertTemp(item.main.temp) : noData}</span></div>
+                <div class="hour-data-row"><span class="hour-data-label">Feels like:</span><span class="hour-data-value">${typeof item.main.feels_like !== 'undefined' ? convertTemp(item.main.feels_like) : noData}</span></div>
+                <div class="hour-data-row"><span class="hour-data-label">Wind speed:</span><span class="hour-data-value">${typeof item.wind.speed !== 'undefined' ? item.wind.speed + ' m/s' : noData}</span></div>
+                <div class="hour-data-row"><span class="hour-data-label">Humidity:</span><span class="hour-data-value">${typeof item.main.humidity !== 'undefined' ? item.main.humidity + ' %' : noData}</span></div>
+                <div class="hour-data-row"><span class="hour-data-label">Air pressure:</span><span class="hour-data-value">${typeof item.main.pressure !== 'undefined' ? item.main.pressure + ' hPa' : noData}</span></div>
+                <div class="hour-data-row"><span class="hour-data-label">Cloudy:</span><span class="hour-data-value">${item.clouds && typeof item.clouds.all !== 'undefined' ? item.clouds.all + ' %' : noData}</span></div>
+                <div class="hour-data-row"><span class="hour-data-label">Visibility:</span><span class="hour-data-value">${typeof item.visibility !== 'undefined' ? (item.visibility / 1000).toFixed(1) + ' km' : noData}</span></div>
+                <div class="hour-data-row"><span class="hour-data-label">Rain (3h):</span><span class="hour-data-value">${item.rain && item.rain['3h'] ? item.rain['3h'] + ' mm' : noData}</span></div>
+                <div class="hour-data-row"><span class="hour-data-label">Snow (3h):</span><span class="hour-data-value">${item.snow && item.snow['3h'] ? item.snow['3h'] + ' mm' : noData}</span></div>
+            </div>
+        </div>`;
+    });
+    html += '</div>';
+    html += '<button class="close-hourly-btn" style="margin-top:1rem;">Sulje</button>';
+    html += '</div>';
+    return html;
+}
+
+// Lisää klikkauskuuntelijat päivän korteille
+function addDayCardClickListeners() {
+    const cards = document.querySelectorAll('.forecast-day-card');
+    cards.forEach(card => {
+        card.addEventListener('click', function() {
+            const date = card.getAttribute('data-date');
+            // Jos hourly-forecast-containerissa on jo kortti tälle päivälle, piilota se (toggle)
+            const container = document.getElementById('hourly-forecast-container');
+            if (!container) return;
+            if (container.firstChild && container.firstChild.getAttribute && container.firstChild.getAttribute('data-date') === date) {
+                container.innerHTML = '';
+                // Näytä ohjeteksti takaisin
+                const hourlyInstruction = document.getElementById('hourly-instruction');
+                if (hourlyInstruction) hourlyInstruction.style.display = '';
+                return;
+            }
+            // Poista mahdollinen vanha tuntikortti
+            container.innerHTML = '';
+            // Luo ja lisää uusi tuntikortti
+            if (lastForecastData && lastForecastData.list) {
+                const hourlyCard = createHourlyForecastCard(date, lastCityName, lastForecastData.list);
+                // Piilota ohjeteksti kun tuntikortti näkyy
+                const hourlyInstruction = document.getElementById('hourly-instruction');
+                if (hourlyInstruction) hourlyInstruction.style.display = 'none';
+                // Lisää data-date attribuutti wrapperiin tunnistusta varten
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = hourlyCard;
+                if (wrapper.firstChild) wrapper.firstChild.setAttribute('data-date', date);
+                container.appendChild(wrapper.firstChild);
+                // Sulje-nappi
+                const closeBtn = container.querySelector('.close-hourly-btn');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function() {
+                        container.innerHTML = '';
+                        // Näytä ohjeteksti takaisin
+                        const hourlyInstruction = document.getElementById('hourly-instruction');
+                        if (hourlyInstruction) hourlyInstruction.style.display = '';
+                    });
+                }
+            }
+        });
+    });
+}
 const getCityCoordinates = (cityNameFromToggle = null) => {
     const cityName = cityNameFromToggle || CityInput.value.trim();
     if(!cityName) return;
@@ -194,8 +317,6 @@ const getUserCoordinates = () => {
             fetch(REVERSE_GEOCODING_URL).then(res => res.json()).then(data => {
                const { name } = data[0]; 
                getWeatherDetails(name,latitude, longitude);
-               console.log(data);
-               
             }).catch(() => {
                 alert("An error occurred while fetching the city. Please try again.");
             });
@@ -209,8 +330,18 @@ const getUserCoordinates = () => {
     );
 };
 
-searchButton.addEventListener("click", () => getCityCoordinates());
-CurrentGeolocationButton.addEventListener("click", getUserCoordinates);
+searchButton.addEventListener("click", () => {
+    getCityCoordinates();
+    // Piilota ohjeteksti kun haku tehdään
+    const hourlyInstruction = document.getElementById('hourly-instruction');
+    if (hourlyInstruction) hourlyInstruction.style.display = 'none';
+});
+CurrentGeolocationButton.addEventListener("click", () => {
+    getUserCoordinates();
+    // Piilota ohjeteksti kun haku tehdään
+    const hourlyInstruction = document.getElementById('hourly-instruction');
+    if (hourlyInstruction) hourlyInstruction.style.display = 'none';
+});
 
 unitToggleButton.addEventListener("click", () => {
     isCelsius = !isCelsius;
