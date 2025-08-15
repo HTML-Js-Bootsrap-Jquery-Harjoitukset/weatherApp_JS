@@ -73,7 +73,7 @@ const createWeatherCard = (cityName, weatherItem, index) => {
         return `
             <li class="card forecast-day-card" data-date="${year}-${month}-${day}">
                 <h2>(${dayName} ${formattedDate})</h2>
-                <img src="${iconSrc}" alt="Weather Icon" style="width: 60px; height: 60px;">
+                <img src="${iconSrc}" alt="Weather Icon" style="width: 60px; height: 60px; display: block; margin: 0 auto;margin-top: 10px;">
                 <h4 class='desc' style='margin-top:25px;'>${weatherItem.weather[0].main} | ${weatherItem.weather[0].description}</h4>
                 <h4>Temperature: ${convertTemp(weatherItem.main.temp)}</h4>
                 <h4>Feels like: ${convertTemp(weatherItem.main.feels_like)} </h4>
@@ -170,7 +170,7 @@ const getWeatherDetails = (cityName, lat, lon) => {
         if (daysForecastDiv && !document.getElementById('hourly-instruction')) {
             const info = document.createElement('div');
             info.id = 'hourly-instruction';
-            info.textContent = 'Klikkaa päivän korttia nähdäksesi tuntiennusteen.';
+            info.textContent = 'Click daily forecast cards to view hourly details.';
             daysForecastDiv.insertBefore(info, daysForecastDiv.querySelector('.weather-cards'));
         } else if (daysForecastDiv && document.getElementById('hourly-instruction')) {
             document.getElementById('hourly-instruction').style.display = '';
@@ -206,7 +206,7 @@ function createHourlyForecastCard(dateString, cityName, forecastList) {
     if (hours.length === 0) return '';
 
     let html = `<div class="hourly-forecast-card" style="background:rgb(108, 117, 125,0.5);margin:1rem 0;padding:1rem;box-shadow:0 2px 8px #0002;">
-        <h3 style="margin-bottom:1rem;">Tuntiennuste: ${cityName} (${dateString.replace(/-/g, '.')})</h3>
+        <h3 style="margin-bottom:1rem;">Hourly forecast for: ${cityName} (${dateString.replace(/-/g, '.')})</h3>
         <div class="hourly-cards-row">
     `;
     hours.forEach(item => {
