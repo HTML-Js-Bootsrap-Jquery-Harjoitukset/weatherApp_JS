@@ -1,9 +1,75 @@
+
 const CityInput = document.querySelector(".cityInput");
 const searchButton = document.querySelector('.search-btn');
 const weatherCardDiv = document.querySelector('.weather-cards');
 const currentWeatherDiv = document.querySelector('.current-weather');
 const CurrentGeolocationButton = document.querySelector('.location-btn');
 const unitToggleButton = document.querySelector('.unit-toggle-btn');
+const autocompleteList = document.getElementById('city-autocomplete');
+
+// Live search: hae kaupunkiehdotukset
+
+
+// Alert box element
+let cityInputAlert = document.getElementById('city-input-alert');
+if (!cityInputAlert) {
+    cityInputAlert = document.createElement('div');
+    cityInputAlert.id = 'city-input-alert';
+    cityInputAlert.className = 'city-input-alert';
+    CityInput.parentNode.insertBefore(cityInputAlert, CityInput.nextSibling);
+}
+
+CityInput.addEventListener('input', function() {
+    // Sallitaan vain kirjaimet ja välilyönnit
+    let raw = CityInput.value;
+    let sanitized = raw.replace(/[^a-zA-ZäöåÄÖÅ\s]/g, '');
+    if (raw !== sanitized) {
+        CityInput.value = sanitized;
+        cityInputAlert.textContent = 'Numerot ja erikoismerkit eivät ole sallittuja.';
+        cityInputAlert.style.display = 'block';
+    } else {
+        cityInputAlert.style.display = 'none';
+    }
+    const query = sanitized.trim();
+    if (query.length < 2) {
+        autocompleteList.style.display = 'none';
+        autocompleteList.innerHTML = '';
+        return;
+    }
+    fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(query)}&limit=5&appid=${API_KEY}`)
+        .then(res => res.json())
+        .then(data => {
+            autocompleteList.innerHTML = '';
+            if (data.length === 0) {
+                autocompleteList.style.display = 'none';
+                return;
+            }
+            data.forEach(city => {
+                const li = document.createElement('li');
+                li.textContent = `${city.name}${city.state ? ', ' + city.state : ''}, ${city.country}`;
+                li.style.padding = '0.7em 1em';
+                li.style.cursor = 'pointer';
+                li.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+                    CityInput.value = city.name;
+                    autocompleteList.style.display = 'none';
+                    getWeatherDetails(city.name, city.lat, city.lon);
+                });
+                autocompleteList.appendChild(li);
+            });
+            autocompleteList.style.display = 'block';
+        })
+        .catch(() => {
+            autocompleteList.style.display = 'none';
+        });
+});
+
+// Piilota lista kun input menettää fokuksen
+CityInput.addEventListener('blur', function() {
+    setTimeout(() => {
+        autocompleteList.style.display = 'none';
+    }, 150);
+});
 
 const API_KEY = "2f72d2b4c845f1bd343c24e1bb01f913";
 let isCelsius = true; // Default unit
@@ -205,8 +271,11 @@ function createHourlyForecastCard(dateString, cityName, forecastList) {
     });
     if (hours.length === 0) return '';
 
+    // Muodosta d.m.y
+    const [year, month, day] = dateString.split('-');
+    const formattedDate = `${parseInt(day)}.${parseInt(month)}.${year}`;
     let html = `<div class="hourly-forecast-card" style="background:rgb(108, 117, 125,0.5);margin:1rem 0;padding:1rem;box-shadow:0 2px 8px #0002;">
-        <h3 style="margin-bottom:1rem;">Hourly forecast for: ${cityName} (${dateString.replace(/-/g, '.')})</h3>
+        <h3 style="margin-bottom:1rem;">Hourly forecast for: ${cityName} (${formattedDate})</h3>
         <div class="hourly-cards-row">
     `;
     hours.forEach(item => {
@@ -226,7 +295,7 @@ function createHourlyForecastCard(dateString, cityName, forecastList) {
             Haze: "icons/Haze.png"
         };
         const iconSrc = customIcons[weatherMain] || customIcons.Default;
-        const noData = '<span style="color:#d32f2f;font-weight:normal;">NO</span>';
+        const noData = '<span style="color:#d32f2f;">N/A</span>';
         html += `<div class="hour-card">
             <div class="hour-time">${hour}:${min}</div>
             <img class="hour-icon" src="${iconSrc}" alt="icon">
@@ -294,10 +363,17 @@ function addDayCardClickListeners() {
         });
     });
 }
+// Syötteen validointi ja XSS-suojaus
+function sanitizeCityName(input) {
+    // Poista HTML-tagit ja erikoismerkit
+    return input.replace(/<[^>]*>?/gm, '').replace(/[^a-zA-Z0-9äöåÄÖÅ\-\s]/g, '').trim();
+}
+
 const getCityCoordinates = (cityNameFromToggle = null) => {
-    const cityName = cityNameFromToggle || CityInput.value.trim();
+    let cityNameRaw = cityNameFromToggle || CityInput.value.trim();
+    let cityName = sanitizeCityName(cityNameRaw);
     if(!cityName) return;
-    const GEOCODING_API_URL = `http://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=1&appid=${API_KEY}`;
+    const GEOCODING_API_URL = `http://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(cityName)}&limit=1&appid=${API_KEY}`;
 
     fetch(GEOCODING_API_URL).then(res => res.json()).then(data => {
         if(!data.length) return alert(`No coordinates found for ${cityName}. Please try again.`);
