@@ -20,6 +20,13 @@ if (!cityInputAlert) {
 }
 
 CityInput.addEventListener('input', function() {
+// Enter-näppäin käynnistää haun
+CityInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        getCityCoordinates();
+        autocompleteList.style.display = 'none';
+    }
+});
     // Sallitaan vain kirjaimet ja välilyönnit
     let raw = CityInput.value;
     let sanitized = raw.replace(/[^a-zA-ZäöåÄÖÅ\s]/g, '');
@@ -84,7 +91,7 @@ const convertTemp = (tempK) => {
 let lastForecastData = null;
 let lastCityName = null;
 
-const createWeatherCard = (cityName, weatherItem, index) => {
+const createWeatherCard = (cityName, weatherItem, index, countryCode = '') => {
     const date = new Date(weatherItem.dt_txt);
     let day = date.getDate();
     let month = date.getMonth() + 1;
@@ -120,7 +127,7 @@ const createWeatherCard = (cityName, weatherItem, index) => {
         return `<div class="details">
                 <div class="mainDATA">
                     <div class="weather-info">
-                        <h2>${cityName} (${dayName} ${formattedDateForMainCard})</h2>
+                        <h2>${cityName}${countryCode ? ', ' + countryCode : ''} (${dayName} ${formattedDateForMainCard})</h2>
                         <h4>Temperature: ${convertTemp(weatherItem.main.temp)}</h4>
                         <h4>Wind Speed: ${weatherItem.wind.speed} M/S</h4>
                         <h4>Humidity: ${weatherItem.main.humidity} %</h4>
@@ -242,12 +249,17 @@ const getWeatherDetails = (cityName, lat, lon) => {
             document.getElementById('hourly-instruction').style.display = '';
         }
 
+        // Etsi maakoodi datasta
+        let countryCode = '';
+        if (data.city && data.city.country) {
+            countryCode = data.city.country;
+        }
         fiveDaysForecast.forEach((weatherItem, index) => {
             if(index === 0) {
-                currentWeatherDiv.insertAdjacentHTML("beforeend", createWeatherCard(cityName, weatherItem, index));
+                currentWeatherDiv.insertAdjacentHTML("beforeend", createWeatherCard(cityName, weatherItem, index, countryCode));
                 updateBackgroundImage(weatherItem.weather[0].main);
             } else {
-                weatherCardDiv.insertAdjacentHTML("beforeend", createWeatherCard(cityName, weatherItem, index));
+                weatherCardDiv.insertAdjacentHTML("beforeend", createWeatherCard(cityName, weatherItem, index, countryCode));
             }
         });
 
@@ -379,6 +391,7 @@ const getCityCoordinates = (cityNameFromToggle = null) => {
         if(!data.length) return alert(`No coordinates found for ${cityName}. Please try again.`);
         const { name,lat,lon } = data[0]; 
         getWeatherDetails(name,lat, lon);
+        console.log(data);
     }).catch(() => {
         alert("An error occurred while fetching the coordinates. Please try again.");
     });
@@ -423,7 +436,13 @@ unitToggleButton.addEventListener("click", () => {
     isCelsius = !isCelsius;
     unitToggleButton.textContent = isCelsius ? "Switch to °F" : "Switch to °C";
 
-    const cityName = document.querySelector(".current-weather h2")?.textContent?.split(" (")[0];
+    // Ota kaupungin nimi ilman maakoodia
+    const h2 = document.querySelector(".current-weather h2")?.textContent;
+    let cityName = '';
+    if (h2) {
+        // Esim. "Espoo, FI (Mon 25.8.2025 14:00)" => "Espoo"
+        cityName = h2.split(',')[0].trim();
+    }
     if (cityName) {
         getCityCoordinates(cityName);
     }
