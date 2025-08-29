@@ -125,23 +125,38 @@ const createWeatherCard = (cityName, weatherItem, index, countryCode = '') => {
 
     if(index === 0) {
         return `<div class="details">
-                <div class="mainDATA">
-                    <div class="weather-info">
-                        <h2>${cityName}${countryCode ? ', ' + countryCode : ''} (${dayName} ${formattedDateForMainCard})</h2>
-                        <h4>Temperature: ${convertTemp(weatherItem.main.temp)}</h4>
-                        <h4>Wind Speed: ${weatherItem.wind.speed} M/S</h4>
-                        <h4>Humidity: ${weatherItem.main.humidity} %</h4>
-                    </div>
-                    <div class="weather-info">
-                        <h4 style='margin-top:3.5rem;'>Pressure: ${weatherItem.main.pressure} kPa</h4>
-                        <h4>Feels like: ${convertTemp(weatherItem.main.feels_like)}</h4>
-                        <h4>Wind degrees: ${weatherItem.wind.deg}°</h4>
-                    </div>
+            <div class="mainDATA" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1em; align-items: start;">
+                <div class="weather-info">
+                    <h2>${cityName}${countryCode ? ', ' + countryCode : ''} (${dayName} ${formattedDateForMainCard})</h2>
+                    <br />
+                    <h4>Temperature: ${convertTemp(weatherItem.main.temp)}</h4>
+                    <h4>Feels like: ${convertTemp(weatherItem.main.feels_like)}</h4>
+                    <h4>Temp max/min: ${convertTemp(weatherItem.main.temp_max)} / ${convertTemp(weatherItem.main.temp_min)}</h4>
+                    <h4>Humidity: ${weatherItem.main.humidity} %</h4>
+                    <h4>Pressure: ${weatherItem.main.pressure} hPa</h4>
                 </div>
-                <div class="icon">
-                    <img src="${iconSrc}" alt="Weather Icon">
-                    <h4> ${weatherItem.weather[0].main} | ${weatherItem.weather[0].description}</h4>
-                </div>`;
+                <div class="weather-info" style="margin-top: 1.5rem;">
+                    <br />
+                    <h4>Wind Speed: ${weatherItem.wind.speed} M/S</h4>
+                    <h4>Wind Gust: ${typeof weatherItem.wind.gust !== 'undefined' ? weatherItem.wind.gust + ' M/S' : 'N/A'}</h4>
+                    <h4>Cloudiness: ${weatherItem.clouds && typeof weatherItem.clouds.all !== 'undefined' ? weatherItem.clouds.all + ' %' : 'N/A'}</h4>
+                    <h4>Rain: ${weatherItem.rain && weatherItem.rain['3h'] ? weatherItem.rain['3h'] + ' mm' : 'N/A'}</h4>
+                    <h4>Snow: ${weatherItem.snow && weatherItem.snow['3h'] ? weatherItem.snow['3h'] + ' mm' : 'N/A'}</h4>
+                </div>
+                <div class="weather-info" style="margin-top: 1.5rem;">
+                    <br />
+                    <h4>Visibility: ${typeof weatherItem.visibility !== 'undefined' ? (weatherItem.visibility / 1000).toFixed(1) + ' km' : 'N/A'}</h4>
+                    <h4>Sunrise: ${typeof lastForecastData?.city?.sunrise !== 'undefined' ? new Date(lastForecastData.city.sunrise * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A'}</h4>
+                    <h4>Sunset: ${typeof lastForecastData?.city?.sunset !== 'undefined' ? new Date(lastForecastData.city.sunset * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A'}</h4>
+                    <h4>Sea Level: ${typeof weatherItem.main.sea_level !== 'undefined' ? weatherItem.main.sea_level + ' hPa' : 'N/A'}</h4>
+                    <h4>Ground Level: ${typeof weatherItem.main.grnd_level !== 'undefined' ? weatherItem.main.grnd_level + ' hPa' : 'N/A'}</h4>
+                    </div>
+            </div>
+            <div class="icon">
+                <img src="${iconSrc}" alt="Weather Icon">
+                <h4> ${weatherItem.weather[0].main} | ${weatherItem.weather[0].description}</h4>
+            </div>
+        </div>`;
     } else {
         return `
             <li class="card forecast-day-card" data-date="${year}-${month}-${day}">
@@ -391,7 +406,6 @@ const getCityCoordinates = (cityNameFromToggle = null) => {
         if(!data.length) return alert(`No coordinates found for ${cityName}. Please try again.`);
         const { name,lat,lon } = data[0]; 
         getWeatherDetails(name,lat, lon);
-        console.log(data);
     }).catch(() => {
         alert("An error occurred while fetching the coordinates. Please try again.");
     });

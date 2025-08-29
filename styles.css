@@ -232,8 +232,9 @@ body{
 body {
     background-repeat: no-repeat !important;
     background-position: center center !important;
-    background-size: cover !important;
+    background-size:cover !important;
     background-attachment: fixed !important;
+    
 }
 
 /* Responsiivinen taustavideo */
@@ -351,14 +352,14 @@ h1{
 
 .weather-data .icon {
     position: absolute !important;
-    right: 5%;
+    right: 6%;
     margin-right: 20px;
-    top:10rem;
+    top:10.5rem;
     text-align: center; 
 }
 
 .weather-data .icon img{
-    width: 5rem;
+    width: 7rem;
 }
 
 .weather-data .icon h4{
