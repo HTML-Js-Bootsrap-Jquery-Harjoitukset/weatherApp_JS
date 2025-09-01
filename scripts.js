@@ -329,7 +329,7 @@ function createHourlyForecastCard(dateString, cityName, forecastList) {
             <div class="hour-main">${item.weather[0].main}</div>
             <div class="hour-desc">${item.weather[0].description}</div>
             <div class="hour-data-table">
-                <div class="hour-data-row"><span class="hour-data-label">Temperature:</span><span class="hour-data-value">${typeof item.main.temp !== 'undefined' ? convertTemp(item.main.temp) : noData}</span></div>
+                <div class="hour-data-row"><span class="hour-data-label" id='Temperature'>Temperature:</span><span class="hour-data-value">${typeof item.main.temp !== 'undefined' ? convertTemp(item.main.temp) : noData}</span></div>
                 <div class="hour-data-row"><span class="hour-data-label">Feels like:</span><span class="hour-data-value">${typeof item.main.feels_like !== 'undefined' ? convertTemp(item.main.feels_like) : noData}</span></div>
                 <div class="hour-data-row"><span class="hour-data-label">Wind speed:</span><span class="hour-data-value">${typeof item.wind.speed !== 'undefined' ? item.wind.speed + ' m/s' : noData}</span></div>
                 <div class="hour-data-row"><span class="hour-data-label">Humidity:</span><span class="hour-data-value">${typeof item.main.humidity !== 'undefined' ? item.main.humidity + ' %' : noData}</span></div>
