@@ -395,6 +395,65 @@ function sanitizeCityName(input) {
     // Poista HTML-tagit ja erikoismerkit
     return input.replace(/<[^>]*>?/gm, '').replace(/[^a-zA-Z0-9äöåÄÖÅ\-\s]/g, '').trim();
 }
+// --- Favorite Cities Feature ---
+let favoriteCities = JSON.parse(localStorage.getItem('favoriteCities') || '[]');
+
+function renderFavorites() {
+    const list = document.getElementById('favorites-list');
+    if (!list) return;
+    list.innerHTML = '';
+    favoriteCities.forEach(city => {
+        const li = document.createElement('li');
+        li.style.display = 'flex';
+        li.style.alignItems = 'center';
+        li.style.marginBottom = '6px';
+        // City button
+        const btn = document.createElement('button');
+        btn.textContent = city;
+        btn.className = 'favorite-city-btn';
+        btn.style.padding = '0.3rem 0.7rem';
+        btn.style.borderRadius = '1rem';
+        btn.style.border = '1px solid #888';
+        btn.style.background = '#f5f5f5';
+        btn.style.cursor = 'pointer';
+        btn.onclick = () => {
+            getCityCoordinates(city);
+        };
+        // Remove button
+        const removeBtn = document.createElement('span');
+        removeBtn.textContent = '✕';
+        removeBtn.title = 'Remove';
+        removeBtn.style.marginLeft = '8px';
+        removeBtn.style.color = '#d32f2f';
+        removeBtn.style.cursor = 'pointer';
+        removeBtn.onclick = (e) => {
+            e.stopPropagation();
+            favoriteCities = favoriteCities.filter(c => c !== city);
+            localStorage.setItem('favoriteCities', JSON.stringify(favoriteCities));
+            renderFavorites();
+        };
+        li.appendChild(btn);
+        li.appendChild(removeBtn);
+        list.appendChild(li);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderFavorites();
+    const addBtn = document.getElementById('add-favorite-btn');
+    const input = document.getElementById('favorite-city-input');
+    if (addBtn && input) {
+        addBtn.onclick = () => {
+            const city = sanitizeCityName(input.value);
+            if (city && !favoriteCities.includes(city)) {
+                favoriteCities.push(city);
+                localStorage.setItem('favoriteCities', JSON.stringify(favoriteCities));
+                renderFavorites();
+                input.value = '';
+            }
+        };
+    }
+});
 
 const getCityCoordinates = (cityNameFromToggle = null) => {
     let cityNameRaw = cityNameFromToggle || CityInput.value.trim();
