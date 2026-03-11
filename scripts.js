@@ -461,6 +461,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
     }
+
+    // (auto-detect UI removed)
 });
 
 const getCityCoordinates = (cityNameFromToggle = null) => {
@@ -499,6 +501,26 @@ const getUserCoordinates = () => {
         }
     );
 };
+
+// Auto-detect user location on page load (unless user disabled it)
+let _autoDetectDone = false;
+function attemptAutoDetectOnLoad() {
+    try {
+        const pref = localStorage.getItem('autoDetectLocation');
+        if (pref === 'false') return; // user opted out
+    } catch (e) {}
+    if (_autoDetectDone) return;
+    if (!('geolocation' in navigator)) return;
+    _autoDetectDone = true;
+    // delay slightly so UI elements mount before permission prompt
+    setTimeout(() => {
+        getUserCoordinates();
+    }, 500);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    attemptAutoDetectOnLoad();
+});
 
 searchButton.addEventListener("click", () => {
     getCityCoordinates();
