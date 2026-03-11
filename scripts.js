@@ -80,6 +80,14 @@ CityInput.addEventListener('blur', function() {
 
 const API_KEY = "2f72d2b4c845f1bd343c24e1bb01f913";
 let isCelsius = true; // Default unit
+// Load stored unit preference from localStorage
+const storedUnit = localStorage.getItem('isCelsius');
+if (storedUnit !== null) {
+    isCelsius = storedUnit === 'true';
+}
+if (unitToggleButton) {
+    unitToggleButton.textContent = isCelsius ? "Switch to \u00B0F" : "Switch to \u00B0C";
+}
 
 const convertTemp = (tempK) => {
     return isCelsius 
@@ -508,6 +516,9 @@ CurrentGeolocationButton.addEventListener("click", () => {
 unitToggleButton.addEventListener("click", () => {
     isCelsius = !isCelsius;
     unitToggleButton.textContent = isCelsius ? "Switch to °F" : "Switch to °C";
+
+    // Persist preference
+    try { localStorage.setItem('isCelsius', String(isCelsius)); } catch(e) { }
 
     // Ota kaupungin nimi ilman maakoodia
     const h2 = document.querySelector(".current-weather h2")?.textContent;
