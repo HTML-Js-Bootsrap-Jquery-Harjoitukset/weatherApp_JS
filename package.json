@@ -1,0 +1,5 @@
+{
+  "name": "weatherapp-js",
+  "private": true,
+  "type": "module"
+}

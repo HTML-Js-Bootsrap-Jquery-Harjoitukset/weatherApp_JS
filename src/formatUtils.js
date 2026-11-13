@@ -15,3 +15,10 @@ export function formatDate(date) {
     if (month < 10) month = '0' + month;
     return `${day}.${month}.${year}`;
 }
+
+export function formatTime(date) {
+    const d = new Date(date);
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+}

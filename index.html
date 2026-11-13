@@ -5,15 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather App</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="scripts.js" defer></script>
+    <script type="module" src="src/main.js"></script>
 </head>
 <body>
     <h1 id="main-title">Weather App</h1>
         <div class="container">
             <div class="weather-input">
                 <h3>Enter a city name</h3>
-                <input type="text" class="cityInput" id="city" placeholder="E.g., Helsinki, Tokyo, New York">
-                <ul id="city-autocomplete" class="autocomplete-list" style="position:absolute;top:100%;left:0;width:100%;background:#fff;border-radius:0 0 1rem 1rem;box-shadow:0 2px 8px #0002;z-index:10;list-style:none;margin:0;padding:0;display:none;"></ul>
+                <div class="search-input-wrap" style="position: relative; width: 100%; max-width: 420px;">
+                    <input type="text" class="cityInput" id="city" placeholder="E.g., Helsinki, Tokyo, New York">
+                    <ul id="city-autocomplete" class="autocomplete-list" style="position:absolute;top:calc(100% + 4px);left:0;width:100%;background:#fff;border-radius:0 0 1rem 1rem;box-shadow:0 2px 8px rgba(0,0,0,0.15);z-index:10;list-style:none;margin:0;padding:0;display:none;"></ul>
+                </div>
                 <button class="search-btn">Get Weather</button>
                 <div class="separator"></div>
                 <button class="location-btn">Use current location </button>
@@ -29,7 +31,22 @@
                     <ul id="favorites-list"></ul>
                 </div>
 
-                
+                <div class="analytics-panel">
+                    <h3>Search Analytics</h3>
+                    <div class="analytics-summary">
+                        <span>Total searches: <strong id="analytics-total-searches">0</strong></span>
+                    </div>
+                    <div class="analytics-actions">
+                        <button id="analytics-clear-btn" class="analytics-action-btn" type="button">Clear</button>
+                        <button id="analytics-export-btn" class="analytics-action-btn secondary" type="button">Export CSV</button>
+                    </div>
+                    <ul id="analytics-list" class="analytics-list"></ul>
+                </div>
+
+                <div class="analytics-panel top-cities-panel">
+                    <h3>Top 5 Most Searched Cities</h3>
+                    <ul id="top-cities-list" class="analytics-list"></ul>
+                </div>
             </div>
             <div class="weather-data">
                 <div class="current-weather">
@@ -40,7 +57,9 @@
                             <h4>Wind Speed: __ M/S</h4>
                             <h4>Humidity: __ %</h4>
                         </div>
-                        
+                        <button id="add-current-favorite-btn" class="add-current-favorite-btn" type="button">
+                            Add to Favorites
+                        </button>
                     </div>
                 </div>
                 <div class="days-forecast">
