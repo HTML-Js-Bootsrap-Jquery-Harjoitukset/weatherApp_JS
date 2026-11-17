@@ -386,20 +386,28 @@ function updateBackgroundImage(weatherCondition) {
   body.style.height = '100vh';
 }
 
-function createWeatherCard(cityName, weatherItem, index, countryCode = '') {
-  const date = new Date(weatherItem.dt_txt);
-  let day = date.getDate();
-  let month = date.getMonth() + 1;
-  let year = date.getFullYear();
-  let hours = date.getHours();
-  let minutes = date.getMinutes();
+function getForecastLocalDateTime(weatherItem, timezoneOffsetSeconds) {
+  return new Date((weatherItem.dt + timezoneOffsetSeconds) * 1000);
+}
 
-  if (day < 10) day = '0' + day;
-  if (month < 10) month = '0' + month;
-  if (minutes < 10) minutes = '0' + minutes;
+function getForecastLocalDate(weatherItem, timezoneOffsetSeconds) {
+  const date = getForecastLocalDateTime(weatherItem, timezoneOffsetSeconds);
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function createWeatherCard(cityName, weatherItem, index, countryCode = '', timezoneOffsetSeconds = 0) {
+  const date = getForecastLocalDateTime(weatherItem, timezoneOffsetSeconds);
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const year = date.getUTCFullYear();
+  const hours = String(date.getUTCHours()).padStart(2, '0');
+  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
 
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const dayName = daysOfWeek[date.getDay()];
+  const dayName = daysOfWeek[date.getUTCDay()];
   const formattedDate = `${day}.${month}.${year}`;
   const formattedDateForMainCard = `${day}.${month}.${year} ${hours}:${minutes}`;
 
@@ -457,14 +465,8 @@ function createWeatherCard(cityName, weatherItem, index, countryCode = '') {
   `;
 }
 
-function createHourlyForecastCard(dateString, cityName, forecastList) {
-  const hours = forecastList.filter((item) => {
-    const d = new Date(item.dt_txt);
-    const y = d.getFullYear();
-    const m = (d.getMonth() + 1).toString().padStart(2, '0');
-    const day = d.getDate().toString().padStart(2, '0');
-    return `${y}-${m}-${day}` === dateString;
-  });
+function createHourlyForecastCard(dateString, cityName, forecastList, timezoneOffsetSeconds) {
+  const hours = forecastList.filter((item) => getForecastLocalDate(item, timezoneOffsetSeconds) === dateString);
 
   if (hours.length === 0) return '';
 
@@ -477,9 +479,9 @@ function createHourlyForecastCard(dateString, cityName, forecastList) {
   `;
 
   hours.forEach((item) => {
-    const d = new Date(item.dt_txt);
-    const hour = d.getHours().toString().padStart(2, '0');
-    const min = d.getMinutes().toString().padStart(2, '0');
+    const d = getForecastLocalDateTime(item, timezoneOffsetSeconds);
+    const hour = d.getUTCHours().toString().padStart(2, '0');
+    const min = d.getUTCMinutes().toString().padStart(2, '0');
     const weatherMain = item.weather[0].main;
     const iconSrc = customIcons[weatherMain] || customIcons.Default;
     const noData = '<span style="color:#d32f2f;">N/A</span>';
@@ -520,11 +522,12 @@ function getWeatherDetails(cityName, lat, lon) {
       lastCityName = cityName;
       recordSearchAnalytics(cityName, data);
 
-      const uniqueForecastDays = [];
+      const timezoneOffsetSeconds = data.city && Number.isFinite(data.city.timezone) ? data.city.timezone : 0;
+      const uniqueForecastDays = new Set();
       const fiveDaysForecast = data.list.filter((forecast) => {
-        const forecastDate = new Date(forecast.dt_txt).getDate();
-        if (!uniqueForecastDays.includes(forecastDate)) {
-          uniqueForecastDays.push(forecastDate);
+        const forecastDate = getForecastLocalDate(forecast, timezoneOffsetSeconds);
+        if (!uniqueForecastDays.has(forecastDate)) {
+          uniqueForecastDays.add(forecastDate);
           return true;
         }
         return false;
@@ -551,11 +554,11 @@ function getWeatherDetails(cityName, lat, lon) {
 
       fiveDaysForecast.forEach((weatherItem, index) => {
         if (index === 0) {
-          currentWeatherDiv.insertAdjacentHTML('beforeend', createWeatherCard(cityName, weatherItem, index, countryCode));
+          currentWeatherDiv.insertAdjacentHTML('beforeend', createWeatherCard(cityName, weatherItem, index, countryCode, timezoneOffsetSeconds));
           syncCurrentFavoriteButton();
           updateBackgroundImage(weatherItem.weather[0].main);
         } else {
-          weatherCardDiv.insertAdjacentHTML('beforeend', createWeatherCard(cityName, weatherItem, index, countryCode));
+          weatherCardDiv.insertAdjacentHTML('beforeend', createWeatherCard(cityName, weatherItem, index, countryCode, timezoneOffsetSeconds));
         }
       });
 
@@ -564,7 +567,8 @@ function getWeatherDetails(cityName, lat, lon) {
         const container = document.getElementById('hourly-forecast-container');
         if (!container || !lastForecastData || !lastForecastData.list) return;
 
-        if (container.firstChild && container.firstChild.getAttribute && container.firstChild.getAttribute('data-date') === date) {
+        const displayedForecast = container.querySelector('.hourly-forecast-card');
+        if (displayedForecast && displayedForecast.getAttribute('data-date') === date) {
           container.innerHTML = '';
           const hourlyInstruction = document.getElementById('hourly-instruction');
           if (hourlyInstruction) hourlyInstruction.style.display = '';
@@ -572,16 +576,17 @@ function getWeatherDetails(cityName, lat, lon) {
         }
 
         container.innerHTML = '';
-        const hourlyCard = createHourlyForecastCard(date, lastCityName, lastForecastData.list);
+        const forecastTimezoneOffset = lastForecastData.city && Number.isFinite(lastForecastData.city.timezone)
+          ? lastForecastData.city.timezone
+          : 0;
+        const hourlyCard = createHourlyForecastCard(date, lastCityName, lastForecastData.list, forecastTimezoneOffset);
         const hourlyInstruction = document.getElementById('hourly-instruction');
-        if (hourlyInstruction) hourlyInstruction.style.display = 'none';
-
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = hourlyCard;
-        if (wrapper.firstChild) {
-          wrapper.firstChild.setAttribute('data-date', date);
-          container.appendChild(wrapper.firstChild);
+        container.innerHTML = hourlyCard || `<p class="hourly-forecast-empty">No forecast data is available for ${date}.</p>`;
+        const hourlyForecast = container.querySelector('.hourly-forecast-card');
+        if (hourlyForecast) {
+          hourlyForecast.setAttribute('data-date', date);
         }
+        if (hourlyInstruction) hourlyInstruction.style.display = hourlyForecast ? 'none' : '';
 
         const closeBtn = container.querySelector('.close-hourly-btn');
         if (closeBtn) {
